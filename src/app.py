@@ -77,6 +77,8 @@ activities = {
     }
 }
 
+# In-memory user profiles database
+user_profiles = {}
 
 @app.get("/")
 def root():
@@ -130,3 +132,24 @@ def unregister_from_activity(activity_name: str, email: str):
     # Remove student
     activity["participants"].remove(email)
     return {"message": f"Unregistered {email} from {activity_name}"}
+
+@app.post("/profiles")
+def create_user_profile(email: str, name: str, grade: str):
+    """Create a user profile"""
+    if email in user_profiles:
+        raise HTTPException(status_code=400, detail="Profile already exists")
+
+    user_profiles[email] = {
+        "name": name,
+        "grade": grade,
+        "activities": []
+    }
+    return {"message": f"Profile created for {email}"}
+
+@app.get("/profiles/{email}")
+def get_user_profile(email: str):
+    """Retrieve a user profile"""
+    if email not in user_profiles:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    return user_profiles[email]
